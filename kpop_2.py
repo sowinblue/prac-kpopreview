@@ -394,7 +394,6 @@ class ModernKpopApp:
             )
             btn.grid(row=i//7, column=i%7, padx=4, pady=4)
 
-
     def show_faq(self):
         self.clear_container()
 
@@ -402,7 +401,6 @@ class ModernKpopApp:
                             "email: hahahoho@kpopreviewrecord.com")
         
         tk.Label(self.container, text=Suggestion_email, font=("Arial", 20, "bold"), bg="#F8F9FA", padx= 300, pady= 200).pack(anchor="w")
-        
 
 if __name__ == "__main__":
     root = tk.Tk()
