@@ -16,6 +16,8 @@ class ModernKpopApp:
 
         self.posts = []
         self.post_id_counter = 1
+        self.editing_post_id = None  # 수정 모드용
+
 
         # --- 상단 헤더 (Shadow 효과 느낌) ---
         self.header = tk.Frame(self.root, bg="#FFFFFF", height=70, relief="flat")
@@ -273,6 +275,19 @@ class ModernKpopApp:
                 justify="left"
             ).pack(anchor="w", pady=(8, 0))
 
+            # 🔹 수정 버튼
+            tk.Button(
+                top_row,
+                text="수정",
+                font=("Arial", 9),
+                fg="white",
+                bg="#007BFF",
+                bd=0,
+                padx=10,
+                cursor="hand2",
+                command=lambda pid=post["id"]: self.edit_post(pid)
+            ).pack(side="right", padx=(0,5))
+
     def delete_post(self, post_id):
         if not messagebox.askyesno("삭제 확인", "이 품평을 삭제하시겠습니까?"):
             return
@@ -286,13 +301,10 @@ class ModernKpopApp:
         title = self.ent_title.get().strip()
         content = self.txt_content.get("1.0", tk.END).strip()
 
-        # 빈 값 체크
         if not artist or not title or not content:
             messagebox.showwarning("입력 오류", "모든 항목을 입력해주세요.")
             return
 
-
-        # 금지 키워드 체크
         forbidden = ["트리플에스", "엔믹스", "아일릿", "뉴진스"]
         for word in forbidden:
             if word in content or word in artist:
@@ -302,26 +314,48 @@ class ModernKpopApp:
                 )
                 return
 
-        # 🔹 실제 저장
-        post = {
-            "id": self.post_id_counter,
-            "artist": artist,
-            "title": title,
-            "content": content
-        }
-
-        self.posts.append(post)
-        self.post_id_counter += 1
+        if self.editing_post_id:  # 수정 모드
+            for post in self.posts:
+                if post["id"] == self.editing_post_id:
+                    post["artist"] = artist
+                    post["title"] = title
+                    post["content"] = content
+                    break
+            messagebox.showinfo("성공", "품평이 성공적으로 수정되었습니다!")
+            self.editing_post_id = None
+        else:  # 새 글 저장
+            post = {
+                "id": self.post_id_counter,
+                "artist": artist,
+                "title": title,
+                "content": content
+            }
+            self.posts.append(post)
+            self.post_id_counter += 1
+            messagebox.showinfo("성공", "품평이 성공적으로 등록되었습니다!")
 
         # 입력창 초기화
         self.ent_artist.delete(0, tk.END)
         self.ent_title.delete(0, tk.END)
         self.txt_content.delete("1.0", tk.END)
 
-        # 저장 확인용
-        print(self.posts)
+        # 목록 새로고침
+        self.show_list()
 
-        messagebox.showinfo("성공", "품평이 성공적으로 등록되었습니다!")
+    def edit_post(self, post_id):
+        post = next((p for p in self.posts if p["id"] == post_id), None)
+        if not post:
+            return
+
+        self.show_board()  # 글쓰기 영역 보여주기
+
+        # 입력창에 기존 글 불러오기
+        self.ent_artist.insert(0, post["artist"])
+        self.ent_title.insert(0, post["title"])
+        self.txt_content.insert("1.0", post["content"])
+
+        self.editing_post_id = post_id  # 수정 모드 설정
+
 
     def search_posts(self):
         keyword = self.search_entry.get().strip()
