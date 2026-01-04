@@ -98,7 +98,48 @@ class ModernKpopApp:
         # 품평장 레이아웃 (좌측 카테고리 / 우측 쓰기)
         left_side = tk.Frame(self.container, bg="#F8F9FA", width=180)
         left_side.pack(side="left", fill="y", padx=(0, 20))
-    
+        
+        # 🔍 검색 영역
+        search_box = tk.Frame(left_side, bg="#F8F9FA")
+        search_box.pack(fill="x", pady=(10, 20))
+
+        tk.Label(
+            search_box,
+            text="SEARCH",
+            font=("Arial", 9, "bold"),
+            bg="#F8F9FA",
+            fg="#ADB5BD"
+        ).pack(anchor="w")
+
+        self.search_field = tk.StringVar(value="artist")
+
+        field_select = ttk.Combobox(
+            search_box,
+            values=["artist", "title"],
+            textvariable=self.search_field,
+            state="readonly",
+            width=10
+        )
+        field_select.pack(fill="x", pady=4)
+        field_select.set("artist")
+
+        self.search_entry = tk.Entry(
+            search_box,
+            bg="white",
+            bd=1
+        )
+        self.search_entry.pack(fill="x", pady=4)
+
+        tk.Button(
+            search_box,
+            text="검색",
+            bg="#1B0046",
+            fg="white",
+            bd=0,
+            cursor="hand2",
+            command=self.search_posts
+        ).pack(fill="x", pady=4)
+
 
         tk.Label(left_side, text="CATEGORY", font=("Arial", 9, "bold"), bg="#F8F9FA", fg="#ADB5BD").pack(anchor="w", pady=10)
         categories = [
@@ -182,8 +223,10 @@ class ModernKpopApp:
         if field and keyword:
             posts = [
                 p for p in self.posts
-                if self.get_initial(p[field][0]) == keyword
+                if keyword.lower() in p[field].lower()
+                or self.get_initial(p[field][0]) == keyword
             ]
+
 
         if not posts:
             tk.Label(
@@ -280,6 +323,15 @@ class ModernKpopApp:
 
         messagebox.showinfo("성공", "품평이 성공적으로 등록되었습니다!")
 
+    def search_posts(self):
+        keyword = self.search_entry.get().strip()
+        field = self.search_field.get()
+
+        if not keyword:
+            messagebox.showwarning("입력 오류", "검색어를 입력하세요.")
+            return
+
+        self.show_list(field=field, keyword=keyword)
 
     def render_posts(self, keyword=None, field=None):
         # 기존 목록 지우기
