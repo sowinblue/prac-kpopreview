@@ -98,6 +98,7 @@ class ModernKpopApp:
         # 품평장 레이아웃 (좌측 카테고리 / 우측 쓰기)
         left_side = tk.Frame(self.container, bg="#F8F9FA", width=180)
         left_side.pack(side="left", fill="y", padx=(0, 20))
+    
 
         tk.Label(left_side, text="CATEGORY", font=("Arial", 9, "bold"), bg="#F8F9FA", fg="#ADB5BD").pack(anchor="w", pady=10)
         categories = [
@@ -197,12 +198,28 @@ class ModernKpopApp:
             card = tk.Frame(list_frame, bg="white", padx=20, pady=15)
             card.pack(fill="x", pady=8)
 
+            top_row = tk.Frame(card, bg="white")
+            top_row.pack(fill="x")
+
             tk.Label(
-                card,
+                top_row,
                 text=f"{post['artist']} - {post['title']}",
                 font=("Arial", 12, "bold"),
                 bg="white"
-            ).pack(anchor="w")
+            ).pack(side="left", anchor="w")
+
+            # 🔥 삭제 버튼
+            tk.Button(
+                top_row,
+                text="삭제",
+                font=("Arial", 9),
+                fg="white",
+                bg="#C92A2A",
+                bd=0,
+                padx=10,
+                cursor="hand2",
+                command=lambda pid=post["id"]: self.delete_post(pid)
+            ).pack(side="right")
 
             tk.Label(
                 card,
@@ -212,6 +229,13 @@ class ModernKpopApp:
                 wraplength=800,
                 justify="left"
             ).pack(anchor="w", pady=(8, 0))
+
+    def delete_post(self, post_id):
+        if not messagebox.askyesno("삭제 확인", "이 품평을 삭제하시겠습니까?"):
+            return
+
+        self.posts = [p for p in self.posts if p["id"] != post_id]
+        self.show_list()  # 삭제 후 목록 새로고침
 
 
     def save_post(self):
